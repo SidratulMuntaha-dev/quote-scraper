@@ -1,15 +1,26 @@
 from bs4 import BeautifulSoup as soup
 import requests
 
+base_url = "https://quotes.toscrape.com/page/{}/"
+page = 1
+count = 1
 
-url = "https://quotes.toscrape.com/"
- 
-web = requests.get(url)
-doc = soup(web.text, "html.parser")
+while True:
+    response = requests.get(base_url.format(page))
+    if response.status_code != 200:
+        break
 
-quotes = doc.find_all("span", itemprop = "text")
-authors = doc.find_all("small",  itemprop ="author")
+    document = soup(response.text, "html.parser")
+    quotes = document.find_all("span", itemprop="text")
+    authors = document.find_all("small", itemprop="author")
 
-for i, (quote,author) in enumerate(zip(quotes, authors), start = 1):
-  print(f'{i}."{quote.text[1:-1]}" ')
-  print("by -", author.text, "\n\n")
+    if not quotes:
+        break
+
+    for quote, author in zip(quotes, authors):
+        print(f'{count}."{quote.text[1:-1]}"')
+        print("by -", author.text, "\n")
+        count += 1
+
+    page += 1
+
